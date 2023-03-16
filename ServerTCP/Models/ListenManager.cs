@@ -161,7 +161,25 @@ namespace ServerTCP
             {
                 return null;
             }
-            return fileManager.SendFile(fileName);
+            else 
+            {
+                try
+                {
+                    byte[] fileData = fileManager.SendFile(fileName);
+                    //Combine file content and file name to together
+                    byte[] buffer = new byte[fileData.Length+fileName.Length+1];
+                    Array.Copy(Encoding.UTF8.GetBytes(fileName), buffer, fileName.Length);
+                    buffer[fileName.Length] = 0; // Add 0 after the filName to be a separator
+                    Array.Copy(fileData, 0, buffer, fileName.Length + 1, fileData.Length);
+
+                    return buffer;
+                }catch (Exception e) 
+                {
+                    Console.WriteLine($"SendFile failed: {e.Message}");
+                    return null;
+                }
+            }
+
 
         }
     }
