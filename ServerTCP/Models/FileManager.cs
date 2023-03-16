@@ -3,6 +3,10 @@ using ServerTCP.Models.Interfaces;
 
 namespace ServerTCP
 {
+    /// <summary>
+    /// This class manages file operations, include about finding the file 
+    /// and covering the file to be a byte array type.
+    /// </summary>
     public class FileManager : IFileManager
     {
         private readonly string uploadDirectory;
