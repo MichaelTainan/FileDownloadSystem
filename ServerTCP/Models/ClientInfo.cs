@@ -1,4 +1,4 @@
-﻿namespace ServerTCP
+﻿namespace ServerTCP.Models
 {
     public struct ClientInfo
     {

@@ -8,15 +8,18 @@ using System.Net.Sockets;
 using System.Text;
 using System.IO;
 using System.Linq;
+using ServerTCP.Models.Interfaces;
+using ServerTCP.Models;
+using Microsoft.VisualStudio.TestPlatform.PlatformAbstractions.Interfaces;
 
-namespace Tests
+namespace ServerTCPNUnitTest.Models
 {
     [TestFixture]
     class ListenManagerTest
     {
-        private ListenManager listenManager;
-        private const string IpAddress = "127.0.0.1";
-        private const int Port = 8080;
+        private IListenManager listenManager;
+        private const string RemoteIpAddress = "127.0.0.1";
+        private const int RemotePort = 8080;
         private ClientInfo localClientInfo;
 
         [SetUp]
@@ -37,7 +40,7 @@ namespace Tests
         {
             using (TcpClient client = new TcpClient())
             {
-                client.Connect(IPAddress.Parse(IpAddress), Port);
+                client.Connect(IPAddress.Parse(RemoteIpAddress), RemotePort);
                 string message = $"Download the file:{localClientInfo.FileName}";
                 byte[] bytes = Encoding.UTF8.GetBytes(message);
 
@@ -70,26 +73,27 @@ namespace Tests
         [Test]
         public void TestSendFile()
         {
-            using (TcpClient client = new TcpClient()) 
+            using (TcpClient client = new TcpClient())
             {
-                client.Connect(IPAddress.Parse(IpAddress), Port);
+                client.Connect(IPAddress.Parse(RemoteIpAddress), RemotePort);
                 string message = $"Download the file:{localClientInfo.FileName}";
                 byte[] bytes = Encoding.UTF8.GetBytes(message);
 
                 NetworkStream stream = client.GetStream();
+                string response = ReadMessage(ref stream);
+
                 stream.Write(bytes, 0, bytes.Length);
 
                 // Get the download file
                 byte[] buffer = new byte[1024];
-                int read = stream.Read(buffer, 0, buffer.Length);
-                string response = Encoding.UTF8.GetString(buffer, 0, read);
+                response = ReadMessage(ref stream);
                 //File.WriteAllBytes(localClientInfo.FileName, buffer.Take(read).ToArray());
                 string checkFile = Encoding.UTF8.GetString(listenManager.SendFile(localClientInfo.FileName));
                 Assert.AreEqual(checkFile, response);
             }
         }
 
-            [TearDown]
+        [TearDown]
         public void TearDown()
         {
             listenManager.Close();
@@ -100,57 +104,24 @@ namespace Tests
         {
             using (TcpClient client = new TcpClient())
             {
-                client.Connect(IPAddress.Parse(IpAddress), Port);
+                client.Connect(IPAddress.Parse(RemoteIpAddress), RemotePort);
                 string message = "Hello, Server";
                 byte[] bytes = Encoding.UTF8.GetBytes(message);
 
-                NetworkStream stream = client.GetStream();
+                NetworkStream stream = client.GetStream();                
+                string response = ReadMessage(ref stream);
+
                 stream.Write(bytes, 0, bytes.Length);
-
-                byte[] buffer = new byte[1024];
-                int read = stream.Read(buffer, 0, buffer.Length);
-                string response = Encoding.UTF8.GetString(buffer, 0, read);
-
+                response = ReadMessage(ref stream);
                 Assert.AreEqual("Hi, Client!", response);
             }
         }
 
-        //[Test]
-        //public void TestSocketServiceByMock()
-        //{
-        //    var mockClient = new Mock<TcpClient>();
-        //    var mockStream = new Mock<NetworkStream>();
-        //    string message = "Hello, Server";
-        //    byte[] bytes = Encoding.UTF8.GetBytes(message);
-
-        //    mockClient.Setup(x => x.Connect(IPAddress.Parse(IpAddress), Port)).Verifiable();
-        //    mockClient.Setup(x => x.GetStream()).Returns(mockStream.Object);
-        //    mockStream.Setup(x => x.Write(bytes, 0, bytes.Length)).Verifiable();
-        //    mockStream.Setup(x => x.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()))
-        //      .Callback<byte[], int, int>((buffer, offset, count) => Encoding.UTF8.GetBytes("Hi, Client!").CopyTo(buffer, 0))
-        //      .Returns(Encoding.UTF8.GetBytes("Hi, Client!").Length);
-
-        //    var client = mockClient.Object;
-
-        //    // Assert
-        //    using (client)
-        //    {
-        //        client.Connect(IPAddress.Parse(IpAddress), Port);
-
-        //        var stream = client.GetStream();
-        //        stream.Write(bytes, 0, bytes.Length);
-
-        //        var buffer = new byte[1024];
-        //        var read = stream.Read(buffer, 0, buffer.Length);
-        //        var response = Encoding.UTF8.GetString(buffer, 0, read);
-
-        //        Assert.AreEqual("Hi, Client!", response);
-        //    }
-
-        //    // 檢查 Mock 的行為是否被呼叫過
-        //    mockStream.Verify();
-
-        //}
-
+        private string ReadMessage(ref NetworkStream stream) 
+        {
+            byte[] buffer = new byte[1024];
+            int read = stream.Read(buffer, 0, buffer.Length);
+            return Encoding.UTF8.GetString(buffer, 0, read);
+        }
     }
 }

@@ -1,9 +1,12 @@
-﻿namespace ServerTCP
+﻿using ServerTCP.Models;
+using ServerTCP.Models.Interfaces;
+
+namespace ServerTCP
 {
-    public class DisplayInfo
+    public class DisplayInfo : IDisplayInfo
     {
         private ClientInfo clientInfo;
-        private FileManager fileManager;
+        private IFileManager fileManager;
 
         public DisplayInfo(ClientInfo client)
         {

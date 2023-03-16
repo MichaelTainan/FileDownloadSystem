@@ -2,15 +2,16 @@
 using ServerTCP;
 using System.IO;
 using System;
+using ServerTCP.Models.Interfaces;
+using ServerTCP.Models;
 
-namespace Tests
+namespace ServerTCPNUnitTest.Models
 {
     [TestFixture]
     class DisplayInfoTest
     {
-        private DisplayInfo displayInfo;
+        private IDisplayInfo displayInfo;
         private ClientInfo clientInfo;
-        private FileManager fileManager;
 
         [SetUp]
         public void Setup()
@@ -20,7 +21,6 @@ namespace Tests
             clientInfo.Port = 8080;
             clientInfo.FileName = "test.txt";
             displayInfo = new DisplayInfo(clientInfo);
-            fileManager = new FileManager();
         }
 
         [Test]

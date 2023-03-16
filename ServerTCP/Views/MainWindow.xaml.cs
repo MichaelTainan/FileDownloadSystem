@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ServerTCP.ViewModels;
 
 namespace ServerTCP
 {
@@ -23,6 +24,12 @@ namespace ServerTCP
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new ServerViewModel(new ListenManager());
+        }
+
+        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 }

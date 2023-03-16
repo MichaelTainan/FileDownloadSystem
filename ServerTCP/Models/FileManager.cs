@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
+﻿using System.IO;
+using ServerTCP.Models.Interfaces;
 
 namespace ServerTCP
 {
-    public class FileManager
+    public class FileManager : IFileManager
     {
         private byte[] file;
         private string filePath;

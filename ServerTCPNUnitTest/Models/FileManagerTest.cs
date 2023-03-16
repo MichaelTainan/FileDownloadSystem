@@ -2,13 +2,14 @@ using NUnit.Framework;
 using ServerTCP;
 using System.IO;
 using System;
+using ServerTCP.Models.Interfaces;
 
-namespace Tests
+namespace ServerTCPNUnitTest.Models
 {
     [TestFixture]
     public class FileManagerTest
     {
-        private FileManager fileManager;
+        private IFileManager fileManager;
         private string fileName;
 
         [SetUp]
