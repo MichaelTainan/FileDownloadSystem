@@ -3,7 +3,7 @@
     public interface IFileManager
     {
         bool FindFile(string fileName);
-        string FindFilePath(string fileName);
-        byte[] SendFile(string fileName);
+        string CombineFilePath(string fileName);
+        byte[] ChangeFileBeByteType(string fileName);
     }
 }

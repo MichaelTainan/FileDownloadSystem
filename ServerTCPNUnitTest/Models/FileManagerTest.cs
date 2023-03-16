@@ -20,9 +20,9 @@ namespace ServerTCPNUnitTest.Models
         }
 
         [Test]
-        public void TestSendFile()
+        public void TestChangeFileBeByteType()
         {
-            var file = fileManager.SendFile(fileName);
+            var file = fileManager.ChangeFileBeByteType(fileName);
             Assert.NotNull(file);
 
         }
@@ -34,9 +34,9 @@ namespace ServerTCPNUnitTest.Models
         }
 
         [Test]
-        public void TestFindFilePath()
+        public void TestCombineFilePath()
         {
-            var message = fileManager.FindFilePath(fileName);
+            var message = fileManager.CombineFilePath(fileName);
             Console.WriteLine(message);
             Assert.That(fileName, Is.EqualTo(Path.GetFileName(message)),
                 "error: File name is not the same");

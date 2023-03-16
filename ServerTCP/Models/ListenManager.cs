@@ -157,7 +157,7 @@ namespace ServerTCP
 
         public byte[] SendFile(string fileName)
         {
-            if (fileManager.SendFile(fileName) == null)
+            if (fileManager.ChangeFileBeByteType(fileName) == null)
             {
                 return null;
             }
@@ -165,7 +165,7 @@ namespace ServerTCP
             {
                 try
                 {
-                    byte[] fileData = fileManager.SendFile(fileName);
+                    byte[] fileData = fileManager.ChangeFileBeByteType(fileName);
                     //Combine file content and file name to together
                     byte[] buffer = new byte[fileData.Length+fileName.Length+1];
                     Array.Copy(Encoding.UTF8.GetBytes(fileName), buffer, fileName.Length);

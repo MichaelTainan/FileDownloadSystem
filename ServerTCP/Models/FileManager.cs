@@ -5,38 +5,40 @@ namespace ServerTCP
 {
     public class FileManager : IFileManager
     {
-        private byte[] file;
-        private string filePath;
         private readonly string uploadDirectory;
 
         public FileManager()
         {
             uploadDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Upload");
         }
-
-        public byte[] SendFile(string fileName)
+        /// <summary>
+        /// Change The file that containing file path and file name to be of type byte[].
+        /// </summary>
+        /// <param name="fileName">The file Name want to be sent.</param>
+        /// <returns>file byte[] type or null</returns>
+        public byte[] ChangeFileBeByteType(string fileName)
         {
-            if (FindFile(fileName))
-            {
-                file = File.ReadAllBytes(filePath);
-                return file;
-            }
-            else
-            {
-                return null;
-            }
+            return FindFile(fileName) ? File.ReadAllBytes(CombineFilePath(fileName)) : null;
         }
 
+        /// <summary>
+        /// Find the file if in the filPath.
+        /// </summary>
+        /// <param name="fileName">The file name want to be finded</param>
+        /// <returns>ture = find the filee or false = didn't find the file</returns>
         public bool FindFile(string fileName)
         {
-            filePath = Path.Combine(uploadDirectory, fileName);
-            return (File.Exists(filePath));
+            return (File.Exists(CombineFilePath(fileName)));
         }
 
-        public string FindFilePath(string fileName)
+        /// <summary>
+        /// Comine the path and file name.
+        /// </summary>
+        /// <param name="fileName">The file name want to be merged.</param>
+        /// <returns>file path</returns>
+        public string CombineFilePath(string fileName)
         {
-            filePath = Path.Combine(uploadDirectory, fileName);
-            return (filePath);
+            return Path.Combine(uploadDirectory, fileName);
         }
     }
 }
