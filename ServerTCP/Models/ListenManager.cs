@@ -9,7 +9,7 @@ using System.Text;
 
 namespace ServerTCP
 {
-    public class ListenManager : IListenManager
+    public class ListenManager : IListenManager, IDisposable
     {
         private const int PORT = 8080;
         private TcpListener tcpListener;
@@ -27,11 +27,19 @@ namespace ServerTCP
 
         public void Start()
         {
-            tcpListener = new TcpListener(IPAddress.Any, PORT);
-            tcpListener.Start(); ;
-            Console.WriteLine($"ServerTCP start to listen on port {PORT}");
-            isRunning = true;
-            tcpListener.BeginAcceptTcpClient(AsyncCallback, tcpListener);
+            /// Because sometimes it will meet the duplicate restart, but tcpListener had listening,
+            /// like Unit Test task, have to skip the process.
+            try
+            {
+                tcpListener = new TcpListener(IPAddress.Any, PORT);
+                tcpListener.Start(); ;
+                Console.WriteLine($"ServerTCP start to listen on port {PORT}");
+                isRunning = true;
+                tcpListener.BeginAcceptTcpClient(AsyncCallback, tcpListener);
+            }catch (Exception ex) 
+            {
+                Console.WriteLine(ex.ToString());
+            }
         }
 
         private void AsyncCallback(IAsyncResult asyncResult)
@@ -101,10 +109,19 @@ namespace ServerTCP
 
         private void RestartTcpListener()
         {
-            tcpListener.Stop();
-            tcpListener.Start();
-            isRunning = true;
-            tcpListener.BeginAcceptTcpClient(AsyncCallback, tcpListener);
+            /// Because sometimes it will meet the duplicate restart, but tcpListener had listening,
+            /// like Unit Test task, have to skip the process.
+            try
+            {
+                tcpListener.Stop();
+                tcpListener.Start();
+                isRunning = true;
+                tcpListener.BeginAcceptTcpClient(AsyncCallback, tcpListener);
+            }
+            catch(Exception ex) 
+            {
+                Console.WriteLine(ex.ToString());
+            }
         }
 
         private void CallClientDisconnectedEventHandler()
@@ -181,6 +198,11 @@ namespace ServerTCP
             }
 
 
+        }
+
+        public void Dispose()
+        {
+            Close();
         }
     }
 }

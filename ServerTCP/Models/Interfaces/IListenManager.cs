@@ -3,7 +3,7 @@ using System.Net.Sockets;
 
 namespace ServerTCP.Models.Interfaces
 {
-    public interface IListenManager
+    public interface IListenManager : IDisposable
     {
         event EventHandler<ClientConnectedEventArgs> ClientConnected;
         event EventHandler<ClientConnectedEventArgs> ClientDisconnected;

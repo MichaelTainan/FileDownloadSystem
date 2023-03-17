@@ -1,16 +1,12 @@
 ﻿using Moq;
-using Moq.Language.Flow;
 using NUnit.Framework;
 using ServerTCP;
+using ServerTCP.Models;
+using ServerTCP.Models.Interfaces;
 using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.IO;
-using System.Linq;
-using ServerTCP.Models.Interfaces;
-using ServerTCP.Models;
-using Microsoft.VisualStudio.TestPlatform.PlatformAbstractions.Interfaces;
 
 namespace ServerTCPNUnitTest.Models
 {
@@ -82,15 +78,15 @@ namespace ServerTCPNUnitTest.Models
             Array.Copy(Encoding.UTF8.GetBytes(localClientInfo.FileName), expectBuffer, localClientInfo.FileName.Length);
             expectBuffer[localClientInfo.FileName.Length] = 0; // Add 0 after the filName to be a separator
             Array.Copy(fileContent, 0, expectBuffer, localClientInfo.FileName.Length + 1, fileContent.Length);
-            
+
             fileManagerMock.Setup(x => x.ChangeFileBeByteArray(localClientInfo.FileName)).Returns(fileContent);
-            
+
             //Act
             byte[] actualFileBuffer = listenManager.SendFile(localClientInfo.FileName);
-            
+
             //Assert
             Assert.AreEqual(expectBuffer, actualFileBuffer);
-        } 
+        }
 
         [TearDown]
         public void TearDown()
@@ -108,7 +104,7 @@ namespace ServerTCPNUnitTest.Models
                 string message = "Hello, Server";
                 byte[] bytes = Encoding.UTF8.GetBytes(message);
 
-                NetworkStream stream = client.GetStream();                
+                NetworkStream stream = client.GetStream();
                 string response = ReadMessage(ref stream);
 
                 stream.Write(bytes, 0, bytes.Length);
@@ -117,7 +113,7 @@ namespace ServerTCPNUnitTest.Models
             }
         }
 
-        private string ReadMessage(ref NetworkStream stream) 
+        private string ReadMessage(ref NetworkStream stream)
         {
             byte[] buffer = new byte[1024];
             int read = stream.Read(buffer, 0, buffer.Length);
