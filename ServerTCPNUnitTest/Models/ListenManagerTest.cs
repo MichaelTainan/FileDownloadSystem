@@ -18,8 +18,9 @@ namespace ServerTCPNUnitTest.Models
     class ListenManagerTest
     {
         private IListenManager listenManager;
+        private Mock<IFileManager> fileManagerMock;
         private const string RemoteIpAddress = "127.0.0.1";
-        private const int RemotePort = 8080;
+        private int RemotePort = 8080;
         private ClientInfo localClientInfo;
 
         [SetUp]
@@ -31,7 +32,8 @@ namespace ServerTCPNUnitTest.Models
                 Port = 0,
                 FileName = "test.txt"
             };
-            listenManager = new ListenManager();
+            fileManagerMock = new Mock<IFileManager>();
+            listenManager = new ListenManager(fileManagerMock.Object);
             listenManager.Start();
         }
 
@@ -73,30 +75,28 @@ namespace ServerTCPNUnitTest.Models
         [Test]
         public void TestSendFile()
         {
-            using (TcpClient client = new TcpClient())
-            {
-                client.Connect(IPAddress.Parse(RemoteIpAddress), RemotePort);
-                string message = $"Download the file:{localClientInfo.FileName}";
-                byte[] bytes = Encoding.UTF8.GetBytes(message);
-
-                NetworkStream stream = client.GetStream();
-                string response = ReadMessage(ref stream);
-
-                stream.Write(bytes, 0, bytes.Length);
-
-                // Get the download file
-                byte[] buffer = new byte[1024];
-                response = ReadMessage(ref stream);
-                //File.WriteAllBytes(localClientInfo.FileName, buffer.Take(read).ToArray());
-                string checkFile = Encoding.UTF8.GetString(listenManager.SendFile(localClientInfo.FileName));
-                Assert.AreEqual(checkFile, response);
-            }
-        }
+            //Arrange
+            byte[] fileContent = Encoding.UTF8.GetBytes($"Download the file:{localClientInfo.FileName}");
+            //SendFile method actually behavior
+            byte[] expectBuffer = new byte[fileContent.Length + localClientInfo.FileName.Length + 1];
+            Array.Copy(Encoding.UTF8.GetBytes(localClientInfo.FileName), expectBuffer, localClientInfo.FileName.Length);
+            expectBuffer[localClientInfo.FileName.Length] = 0; // Add 0 after the filName to be a separator
+            Array.Copy(fileContent, 0, expectBuffer, localClientInfo.FileName.Length + 1, fileContent.Length);
+            
+            fileManagerMock.Setup(x => x.ChangeFileBeByteArray(localClientInfo.FileName)).Returns(fileContent);
+            
+            //Act
+            byte[] actualFileBuffer = listenManager.SendFile(localClientInfo.FileName);
+            
+            //Assert
+            Assert.AreEqual(expectBuffer, actualFileBuffer);
+        } 
 
         [TearDown]
         public void TearDown()
         {
             listenManager.Close();
+            listenManager = null;
         }
 
         [Test]

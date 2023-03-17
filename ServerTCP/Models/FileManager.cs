@@ -16,11 +16,11 @@ namespace ServerTCP
             uploadDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Upload");
         }
         /// <summary>
-        /// Change The file that containing file path and file name to be of type byte[].
+        /// Change The file to become a byte[] type.
         /// </summary>
         /// <param name="fileName">The file Name want to be sent.</param>
         /// <returns>file byte[] type or null</returns>
-        public byte[] ChangeFileBeByteType(string fileName)
+        public byte[] ChangeFileBeByteArray(string fileName)
         {
             return FindFile(fileName) ? File.ReadAllBytes(CombineFilePath(fileName)) : null;
         }

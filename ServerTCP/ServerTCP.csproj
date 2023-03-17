@@ -84,6 +84,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Models\ClientConnectedEventArgs.cs" />
     <Compile Include="Models\ClientInfo.cs" />
     <Compile Include="Models\DisplayInfo.cs" />
     <Compile Include="Models\FileManager.cs" />

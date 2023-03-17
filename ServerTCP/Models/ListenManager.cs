@@ -19,10 +19,10 @@ namespace ServerTCP
         private bool isRunning = false;
         public event EventHandler<ClientConnectedEventArgs> ClientConnected;
         public event EventHandler<ClientConnectedEventArgs> ClientDisconnected;
-        public ListenManager()
+        public ListenManager(IFileManager fileManager)
         {
             clientInfo = new ClientInfo();
-            fileManager = new FileManager();
+            this.fileManager = fileManager;
         }
 
         public void Start()
@@ -157,7 +157,7 @@ namespace ServerTCP
 
         public byte[] SendFile(string fileName)
         {
-            if (fileManager.ChangeFileBeByteType(fileName) == null)
+            if (fileManager.ChangeFileBeByteArray(fileName) == null)
             {
                 return null;
             }
@@ -165,7 +165,7 @@ namespace ServerTCP
             {
                 try
                 {
-                    byte[] fileData = fileManager.ChangeFileBeByteType(fileName);
+                    byte[] fileData = fileManager.ChangeFileBeByteArray(fileName);
                     //Combine file content and file name to together
                     byte[] buffer = new byte[fileData.Length+fileName.Length+1];
                     Array.Copy(Encoding.UTF8.GetBytes(fileName), buffer, fileName.Length);
@@ -181,16 +181,6 @@ namespace ServerTCP
             }
 
 
-        }
-    }
-
-    public class ClientConnectedEventArgs : EventArgs
-    {
-        public ClientInfo ClientInfo { get; set; }
-
-        public ClientConnectedEventArgs(ClientInfo clientInfo)
-        {
-            this.ClientInfo = clientInfo;
         }
     }
 }

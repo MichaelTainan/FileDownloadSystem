@@ -24,7 +24,7 @@ namespace ServerTCP
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new ServerViewModel(new ListenManager());
+            DataContext = new ServerViewModel(new ListenManager(new FileManager()));
         }
 
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)

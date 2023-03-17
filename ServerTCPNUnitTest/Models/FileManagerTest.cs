@@ -20,9 +20,9 @@ namespace ServerTCPNUnitTest.Models
         }
 
         [Test]
-        public void TestChangeFileBeByteType()
+        public void TestChangeFileBeByteArray()
         {
-            var file = fileManager.ChangeFileBeByteType(fileName);
+            var file = fileManager.ChangeFileBeByteArray(fileName);
             Assert.NotNull(file);
 
         }

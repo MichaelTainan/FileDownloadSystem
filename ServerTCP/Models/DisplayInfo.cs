@@ -30,7 +30,7 @@ namespace ServerTCP
 
         public byte[] SendFile()
         {
-            byte[] file = fileManager.ChangeFileBeByteType(clientInfo.FileName);
+            byte[] file = fileManager.ChangeFileBeByteArray(clientInfo.FileName);
             return file;
 
         }
