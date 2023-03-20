@@ -9,6 +9,7 @@ namespace ServerTCPNUnitTest.ViewModels
     [TestFixture]
     class ServerViewModelTest
     {
+        private Mock<IClientManager> mockClientManager;
         private Mock<IListenManager> mockListenManager;
         private ServerViewModel serverViewModel;
 
@@ -16,7 +17,8 @@ namespace ServerTCPNUnitTest.ViewModels
         public void SetUp() 
         {
             mockListenManager = new Mock<IListenManager>();
-            serverViewModel = new ServerViewModel(mockListenManager.Object);
+            mockClientManager = new Mock<IClientManager>();
+            serverViewModel = new ServerViewModel(mockListenManager.Object, mockClientManager.Object);
         }
 
         [Test]

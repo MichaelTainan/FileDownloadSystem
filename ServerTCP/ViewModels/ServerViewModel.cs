@@ -12,18 +12,23 @@ namespace ServerTCP.ViewModels
     public class ServerViewModel : INotifyPropertyChanged
     {
         private IListenManager listenManager;
+        private IClientManager clientManager;
         private ObservableCollection<ClientViewModel> clients;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public ServerViewModel(IListenManager listenManager)
+        public ServerViewModel(IListenManager listenManager, IClientManager clientManager)
         {
             this.listenManager = listenManager;
+            this.clientManager = clientManager;
             clients = new ObservableCollection<ClientViewModel>();
             StartCommand = new RelayCommand(Start, CanStart);
             StopCommand = new RelayCommand(Stop, CanStop);
-            listenManager.ClientConnected += ListenManager_ClientConnected;
-            listenManager.ClientDisconnected += ListenManager_Disconnected;
+            //listenManager.ClientConnected += ListenManager_ClientConnected;
+            //listenManager.ClientDisconnected += ListenManager_Disconnected;
+            clientManager.AddClientInfo += ListenManager_ClientConnected;
+            clientManager.updateClientInfo += ListenManager_ClientConnected;
+            clientManager.RemoveClientInfo += ListenManager_Disconnected;
         }
 
         public void ListenManager_ClientConnected(object sender, ClientConnectedEventArgs e)

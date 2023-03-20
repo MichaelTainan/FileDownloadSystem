@@ -6,23 +6,24 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using System.Windows.Media.TextFormatting;
 
 namespace ServerTCP
 {
     public class ListenManager : IListenManager, IDisposable
     {
-        private const int PORT = 8080;
+        private int port;
         private TcpListener tcpListener;
         private TcpClient client;
-        private ClientInfo clientInfo;
         private IFileManager fileManager;
+        private IClientManager clientManager;
         private bool isRunning = false;
-        public event EventHandler<ClientConnectedEventArgs> ClientConnected;
-        public event EventHandler<ClientConnectedEventArgs> ClientDisconnected;
-        public ListenManager(IFileManager fileManager)
+
+        public ListenManager(IFileManager fileManager, IClientManager clientManager, int port)
         {
-            clientInfo = new ClientInfo();
             this.fileManager = fileManager;
+            this.clientManager = clientManager;
+            this.port = port;
         }
 
         public void Start()
@@ -31,35 +32,35 @@ namespace ServerTCP
             /// like Unit Test task, have to skip the process.
             try
             {
-                tcpListener = new TcpListener(IPAddress.Any, PORT);
-                tcpListener.Start(); ;
-                Console.WriteLine($"ServerTCP start to listen on port {PORT}");
+                tcpListener = new TcpListener(IPAddress.Any, port);
+                tcpListener.Start();
+                Console.WriteLine($"ServerTCP start to listen on port {port}");
                 isRunning = true;
-                tcpListener.BeginAcceptTcpClient(AsyncCallback, tcpListener);
-            }catch (Exception ex) 
+                tcpListener.BeginAcceptTcpClient(OnClientConnected, tcpListener);
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
         }
 
-        private void AsyncCallback(IAsyncResult asyncResult)
+        /// <summary>
+        /// When the ClientConnected have to do something.
+        /// </summary>
+        /// <param name="asyncResult">input asynchronous task result</param>
+        private void OnClientConnected(IAsyncResult asyncResult)
         {
             if (!isRunning)
             {
                 return;
             }
-
             var listener = asyncResult.AsyncState as TcpListener;
             client = listener.EndAcceptTcpClient(asyncResult);
             Console.WriteLine("Client had cnnected...");
 
-            IPEndPoint remoteIPEndPoint = (IPEndPoint)client.Client.RemoteEndPoint;
-            clientInfo.IP = remoteIPEndPoint.Address.ToString();
-            clientInfo.Port = remoteIPEndPoint.Port;
-            ClientConnected?.Invoke(this, new ClientConnectedEventArgs(clientInfo));
-
+            SetUpClientManager();
             NetworkStream stream = client.GetStream();
-            SendMessageToClient(ref stream, "You had connected...");
+            clientManager.SendMessageToClient(ref stream, "You had connected...");
             try
             {
                 while (true)
@@ -73,25 +74,28 @@ namespace ServerTCP
                     if (string.Equals("Hello, Server", receive))
                     {
                         //Send the message to client
-                        SendMessageToClient(ref stream, "Hi, Client!");
+                        clientManager.SendMessageToClient(ref stream, "Hi, Client!");
                     }
 
-                    if (string.Equals("Download the file", receive.Split(':')[0]))
+                    if (string.Equals($"Download the file", receive.Split(':')[0]))
                     {
+                        clientManager.FileName = receive.Split(':')[1];
+                        clientManager.CallToUpdateClientInfo();
                         // Check and Send the file to client
-                        clientInfo.FileName = receive.Split(':')[1];
-                        CheckTheDownloadFile(ref stream);
+                        SendRequestedFile(ref stream);
                     }
 
                     if (string.Equals("Exit", receive))
                     {
-                        CallClientDisconnectedEventHandler();
+                        clientManager.CallToRemoveClientInfo();
+                        Console.WriteLine("Client disconnected");
                         break;
                     }
 
                     if (read == 0)
                     {
-                        CallClientDisconnectedEventHandler();
+                        clientManager.CallToRemoveClientInfo();
+                        Console.WriteLine("Client disconnected");
                         break;
                     }
 
@@ -99,7 +103,8 @@ namespace ServerTCP
             }
             catch (IOException)
             {
-                CallClientDisconnectedEventHandler();
+                clientManager.CallToRemoveClientInfo();
+                Console.WriteLine("Client disconnected");
             }
             // close the connection
             stream.Close();
@@ -107,6 +112,17 @@ namespace ServerTCP
             RestartTcpListener();
         }
 
+        /// <summary>
+        /// Update clientManager client infomation property and call the AddClientInfo EventHandler
+        /// </summary>
+        private void SetUpClientManager()
+        {
+            IPEndPoint remoteIPEndPoint = (IPEndPoint) client.Client.RemoteEndPoint;
+            clientManager.IP = remoteIPEndPoint.Address.ToString();
+            clientManager.Port = remoteIPEndPoint.Port;
+            clientManager.FileName = "";
+            clientManager.CallToAddClientInfo();
+        }
         private void RestartTcpListener()
         {
             /// Because sometimes it will meet the duplicate restart, but tcpListener had listening,
@@ -116,28 +132,11 @@ namespace ServerTCP
                 tcpListener.Stop();
                 tcpListener.Start();
                 isRunning = true;
-                tcpListener.BeginAcceptTcpClient(AsyncCallback, tcpListener);
+                tcpListener.BeginAcceptTcpClient(OnClientConnected, tcpListener);
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-            }
-        }
-
-        private void CallClientDisconnectedEventHandler()
-        {
-            ClientDisconnected?.Invoke(this, new ClientConnectedEventArgs(clientInfo));
-            Console.WriteLine("Client disconnected");
-        }
-
-        public void SendMessageToClient(ref NetworkStream stream, string message)
-        {
-            if (stream.CanWrite)
-            {
-                //string message = "Hi, Client!";
-                byte[] bytes = Encoding.UTF8.GetBytes(message);
-                stream.Write(bytes, 0, bytes.Length);
-                Console.WriteLine($"Send the message to Client: {message}");
             }
         }
 
@@ -148,58 +147,25 @@ namespace ServerTCP
             client?.Close();
         }
 
-        public ClientInfo GetClientInfo()
+        /// <summary>
+        /// Send the client requested file if find the file in the folder.
+        /// </summary>
+        /// <param name="stream">NetworkStream when it be created in connection.</param>
+        private void SendRequestedFile(ref NetworkStream stream)
         {
-            return clientInfo;
-        }
-
-        private void CheckTheDownloadFile(ref NetworkStream stream) 
-        {
-            //clientInfo.FileName = receive.Split(':')[1];
-            ClientConnected?.Invoke(this, new ClientConnectedEventArgs(clientInfo));
-
-            var file = SendFile(clientInfo.FileName);
+            var file = fileManager.CombineFileContentAndName(clientManager.FileName);
             if (file != null)
             {
                 stream.Write(file, 0, file.Length);
-                Console.WriteLine($"Send the {clientInfo.FileName} to Client.");
+                Console.WriteLine($"Send the {clientManager.FileName} to Client.");
             }
             else
             {
                 //Send Error message to client
-                SendMessageToClient(ref stream, $"Error, Can't Find the File:{clientInfo.FileName}!");
-                Console.WriteLine($"Can't Find the File:{clientInfo.FileName}");
+                clientManager.SendMessageToClient(ref stream, $"Error, Can't Find the File:{clientManager.FileName}!");
+                Console.WriteLine($"Can't Find the File:{clientManager.FileName}");
             }
         }
-
-        public byte[] SendFile(string fileName)
-        {
-            if (fileManager.ChangeFileBeByteArray(fileName) == null)
-            {
-                return null;
-            }
-            else 
-            {
-                try
-                {
-                    byte[] fileData = fileManager.ChangeFileBeByteArray(fileName);
-                    //Combine file content and file name to together
-                    byte[] buffer = new byte[fileData.Length+fileName.Length+1];
-                    Array.Copy(Encoding.UTF8.GetBytes(fileName), buffer, fileName.Length);
-                    buffer[fileName.Length] = 0; // Add 0 after the filName to be a separator
-                    Array.Copy(fileData, 0, buffer, fileName.Length + 1, fileData.Length);
-
-                    return buffer;
-                }catch (Exception e) 
-                {
-                    Console.WriteLine($"SendFile failed: {e.Message}");
-                    return null;
-                }
-            }
-
-
-        }
-
         public void Dispose()
         {
             Close();

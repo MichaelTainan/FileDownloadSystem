@@ -1,4 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using ServerTCP.Models;
+using System.Net.Sockets;
+using System.Text;
 using ServerTCP.Models.Interfaces;
 
 namespace ServerTCP
@@ -43,6 +47,40 @@ namespace ServerTCP
         public string CombineFilePath(string fileName)
         {
             return Path.Combine(uploadDirectory, fileName);
+        }
+       
+        /// <summary>
+        /// Combine file content and filename and 0 mumber to client site
+        /// </summary>
+        /// <param name="fileName">The file name want to combine after file content</param>
+        /// <returns>retun combine file content and filename and 0 byte array data or null</returns>
+        public byte[] CombineFileContentAndName(string fileName)
+        {
+            if (ChangeFileBeByteArray(fileName) == null)
+            {
+                return null;
+            }
+            else
+            {
+                try
+                {
+                    byte[] fileData = ChangeFileBeByteArray(fileName);
+                    //Combine file content and file name to together
+                    byte[] buffer = new byte[fileData.Length + fileName.Length + 1];
+                    Array.Copy(Encoding.UTF8.GetBytes(fileName), buffer, fileName.Length);
+                    buffer[fileName.Length] = 0; // Add 0 after the filName to be a separator
+                    Array.Copy(fileData, 0, buffer, fileName.Length + 1, fileData.Length);
+
+                    return buffer;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"SendFile failed: {e.Message}");
+                    return null;
+                }
+            }
+
+
         }
     }
 }

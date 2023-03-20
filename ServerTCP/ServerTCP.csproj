@@ -86,7 +86,7 @@
     </ApplicationDefinition>
     <Compile Include="Models\ClientConnectedEventArgs.cs" />
     <Compile Include="Models\ClientInfo.cs" />
-    <Compile Include="Models\DisplayInfo.cs" />
+    <Compile Include="Models\ClientManager.cs" />
     <Compile Include="Models\FileManager.cs" />
     <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -96,8 +96,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Models\Interfaces\IClientManager.cs" />
     <Compile Include="Models\Interfaces\IListenManager.cs" />
-    <Compile Include="Models\Interfaces\IDisplayInfo.cs" />
     <Compile Include="Models\Interfaces\IFileManager.cs" />
     <Compile Include="Models\ListenManager.cs" />
     <Compile Include="ViewModels\ClientViewModel.cs" />

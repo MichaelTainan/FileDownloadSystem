@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ServerTCP.Models;
 using ServerTCP.ViewModels;
 
 namespace ServerTCP
@@ -24,7 +25,10 @@ namespace ServerTCP
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new ServerViewModel(new ListenManager(new FileManager()));
+            var clientManager = new ClientManager();
+            var fileManager = new FileManager();
+            var listenManager = new ListenManager(fileManager, clientManager, 8080);
+            DataContext = new ServerViewModel(listenManager, clientManager);
         }
 
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
