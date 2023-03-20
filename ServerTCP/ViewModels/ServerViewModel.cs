@@ -24,27 +24,22 @@ namespace ServerTCP.ViewModels
             clients = new ObservableCollection<ClientViewModel>();
             StartCommand = new RelayCommand(Start, CanStart);
             StopCommand = new RelayCommand(Stop, CanStop);
-            //listenManager.ClientConnected += ListenManager_ClientConnected;
-            //listenManager.ClientDisconnected += ListenManager_Disconnected;
             clientManager.AddClientInfo += ListenManager_ClientConnected;
             clientManager.updateClientInfo += ListenManager_ClientConnected;
             clientManager.RemoveClientInfo += ListenManager_Disconnected;
         }
 
-        public void ListenManager_ClientConnected(object sender, ClientConnectedEventArgs e)
+        public void ListenManager_ClientConnected(object sender, ClientInfo e)
         {
-            AddClient(e.ClientInfo);
-            UpdateClient(e.ClientInfo);
+            AddClient(e);
+            UpdateClient(e);
         }
 
-        private void ListenManager_Disconnected(object sender, ClientConnectedEventArgs e)
+        private void ListenManager_Disconnected(object sender, ClientInfo e)
         {
-            var clientToRemove = clients.FirstOrDefault
-                             (c => c.IP == e.ClientInfo.IP && c.Port == e.ClientInfo.Port);
-            if (clientToRemove != null)
+            if (!string.IsNullOrEmpty(e.IP) && e.Port != 0)
             {
-                //clients.Remove(clientToRemove);
-                RemoveClient(e.ClientInfo);
+                RemoveClient(e);
             }
         }
 
@@ -153,15 +148,6 @@ namespace ServerTCP.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
-
-    //public class ClientInfoEventArgs : EventArgs
-    //{
-    //    public ClientInfo ClientInfo { get; set; }
-    //    public ClientInfoEventArgs(ClientInfo clientInfo)
-    //    {
-    //        ClientInfo = clientInfo;
-    //    }
-    //}
 
     internal class RelayCommand : ICommand
     {

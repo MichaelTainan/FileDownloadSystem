@@ -5,9 +5,9 @@ namespace ServerTCP.Models.Interfaces
 {
     public interface IClientManager
     {
-        event EventHandler<ClientConnectedEventArgs> AddClientInfo;
-        event EventHandler<ClientConnectedEventArgs> updateClientInfo;
-        event EventHandler<ClientConnectedEventArgs> RemoveClientInfo;
+        event EventHandler<ClientInfo> AddClientInfo;
+        event EventHandler<ClientInfo> updateClientInfo;
+        event EventHandler<ClientInfo> RemoveClientInfo;
         string FileName { get; set; }
         string IP { get; set; }
         int Port { get; set; }
