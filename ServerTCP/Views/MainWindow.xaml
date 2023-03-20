@@ -9,9 +9,10 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <ListView Grid.Row="1" ItemsSource="{Binding Clients}" Margin="80,40,80,150" SelectionChanged="ListView_SelectionChanged">
+        <ListView Grid.Row="0" ItemsSource="{Binding Clients}" Margin="80,40,80,150" SelectionChanged="ListView_SelectionChanged">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="IP" DisplayMemberBinding="{Binding IP}" Width="120" />
@@ -20,9 +21,13 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <StackPanel Grid.Row="1" Margin="80,200,80,50" Orientation="Horizontal">
-            <Button Content="Start Server" Command="{Binding StartCommand}" Width="160" HorizontalAlignment="Left" Height="25" />
-            <Button Content="Stop Server" Command="{Binding StopCommand}" Width="160" HorizontalAlignment="Right" Height="25" />
-        </StackPanel>
+        <Grid Grid.Row="1" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Row="1" Grid.Column="0" Content="Start Server" Command="{Binding StartCommand}"  Margin="70,0" Width="160" HorizontalAlignment="Left" Height="25" />
+            <Button Grid.Row="1" Grid.Column="1" Content="Stop Server" Command="{Binding StopCommand}"  Margin="0,0" Width="160" HorizontalAlignment="Right" Height="25" />
+        </Grid>
     </Grid>
 </Window>
