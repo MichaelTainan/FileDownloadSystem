@@ -33,25 +33,41 @@ namespace ClientTCP
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                serverInfo.Message = "Can't connect to server! Please check the Server site had started.";
+                //ServerConnected?.Invoke(this, new ServerConnectedEventArgs(serverInfo));
+                ServerDisconnected?.Invoke(this, new ServerConnectedEventArgs(serverInfo));
             }
         }
 
         public void SendMessage(string message)
         {
-            try
+            if (stream != null)
             {
-                byte[] bytes = Encoding.UTF8.GetBytes(message);
-                stream.Write(bytes, 0, bytes.Length);
+                try
+                {
+                    byte[] bytes = Encoding.UTF8.GetBytes(message);
+                    stream.Write(bytes, 0, bytes.Length);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    serverInfo.Message = "The connection is disconnected!";
+                    //ServerConnected?.Invoke(this, new ServerConnectedEventArgs(serverInfo));
+                    ServerDisconnected?.Invoke(this, new ServerConnectedEventArgs(serverInfo));
+                }
             }
-            catch (Exception e)
+            else 
             {
-                Console.WriteLine(e.Message);
+                serverInfo.Message = "No connection! Please check the connection had succeeded.";
+                //ServerConnected?.Invoke(this, new ServerConnectedEventArgs(serverInfo));
+                ServerDisconnected?.Invoke(this, new ServerConnectedEventArgs(serverInfo));
             }
-        }
+         }
         private async Task ReceiveMessageAsync()
         {
             byte[] buffer = new byte[1024];
             int bytesRead = 0;
+
             while (true)
             {
                 try
@@ -83,19 +99,35 @@ namespace ClientTCP
                     }
                     ServerConnected?.Invoke(this, new ServerConnectedEventArgs(serverInfo));
                 }
-                catch (Exception e)
+                catch (IOException e)
                 {
                     Console.WriteLine(e.Message);
+                    serverInfo.Message = "The connection is disconnected! And the Server site had closed!";
                     ServerDisconnected?.Invoke(this, new ServerConnectedEventArgs(serverInfo));
                     break;
+                }
+                catch (SocketException e)
+                {
+                    Console.WriteLine(e.Message);
+                    serverInfo.Message = "The connection is disconnected!";
+                    //ServerConnected?.Invoke(this, new ServerConnectedEventArgs(serverInfo));
+                    ServerDisconnected?.Invoke(this, new ServerConnectedEventArgs(serverInfo));
+                    break;
+                }
+                catch (Exception e)
+                { 
+                    Console.WriteLine(e.Message);
+                    serverInfo.Message = $"{e.Message}";
+                    ServerConnected?.Invoke(this, new ServerConnectedEventArgs(serverInfo));
+                    //break;
                 }
             }
         }
 
         public void Disconnect()
         {
-            stream.Close();
-            client.Close();
+            stream?.Close();
+            client?.Close();
         }
 
         public string GetServerIP()

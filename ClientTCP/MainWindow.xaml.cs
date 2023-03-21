@@ -1,5 +1,6 @@
 ﻿using ClientTCP.Interfaces;
 using Microsoft.Win32;
+using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
@@ -33,8 +34,9 @@ namespace ClientTCP
 
             connectManager.ServerConnected += ConnectManager_ServerConnected;
             connectManager.ServerDisconnected += ConnectManager_Disconnected;
- 
+            
             InitializeComponent();
+            SaveAsTextBox.Text = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\Downloads";
             recordManager.SaveServerInfoFromClient(serverInfo);
         }
         
@@ -47,6 +49,10 @@ namespace ClientTCP
 
         private void ConnectManager_Disconnected(object sender, ServerConnectedEventArgs e)
         {
+            recordManager.SaveServerInfoFromServer(e.ServerInfo.Message);
+            SyncServerInfo();
+            UpdateMessageTextBox();
+            connectManager.Disconnect();
         }
 
         public void TextChangedEvent(object sender, TextChangedEventArgs e)
