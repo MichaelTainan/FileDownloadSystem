@@ -20,13 +20,15 @@ namespace ServerTCPNUnitTest.ViewModels
             mockClientManager = new Mock<IClientManager>();
             serverViewModel = new ServerViewModel(mockListenManager.Object, mockClientManager.Object);
         }
-
+        /// <summary>
+        /// Test When StartCommand execute, if the mockListenManger.Start() had start one time, 
+        /// and IsRunning is true.
+        /// </summary>
         [Test]
         public void TestStartCommand_ShouldCall() 
         {
             //Arrange
             mockListenManager.Setup(x => x.Start());
-
             //Act
             serverViewModel.StartCommand.Execute(null);
             //Assert
