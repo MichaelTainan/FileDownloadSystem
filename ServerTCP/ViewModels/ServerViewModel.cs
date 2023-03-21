@@ -83,7 +83,8 @@ namespace ServerTCP.ViewModels
         {
             if (isRunning)
             {
-                listenManager.Close();
+                listenManager?.Close();
+                clients.Clear();
                 IsRunning = false;
             }
         }

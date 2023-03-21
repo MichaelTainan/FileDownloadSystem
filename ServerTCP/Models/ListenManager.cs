@@ -107,8 +107,8 @@ namespace ServerTCP
                 Console.WriteLine("Client disconnected");
             }
             // close the connection
-            stream.Close();
-            client.Close();
+            stream?.Close();
+            client?.Close();
             RestartTcpListener();
         }
 
@@ -129,10 +129,13 @@ namespace ServerTCP
             /// like Unit Test task, have to skip the process.
             try
             {
-                tcpListener.Stop();
-                tcpListener.Start();
-                isRunning = true;
-                tcpListener.BeginAcceptTcpClient(OnClientConnected, tcpListener);
+                if (tcpListener != null)
+                {
+                    tcpListener.Stop();
+                    tcpListener.Start();
+                    isRunning = true;
+                    tcpListener.BeginAcceptTcpClient(OnClientConnected, tcpListener);
+                }
             }
             catch (Exception ex)
             {
@@ -145,6 +148,8 @@ namespace ServerTCP
             isRunning = false;
             tcpListener?.Stop();
             client?.Close();
+            tcpListener = null;
+            client = null;
         }
 
         /// <summary>
